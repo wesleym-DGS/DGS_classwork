@@ -1,3 +1,5 @@
+import random
+
 import pygame
 
 class Game:
@@ -14,24 +16,40 @@ class Game:
             if event.type == pygame.QUIT:
                 self.running = False
 
-    def render(self, player_pos):
+    def render(self, entity_list):
         self.screen.fill((0, 0, 0))
         # Draw player circle (radius 15)
-        pygame.draw.circle(self.screen, (0, 128, 255), (int(player_pos.x), int(player_pos.y)), 15)
-        pygame.display.flip()
+        for x in entity_list:
+            pygame.draw.circle(self.screen, (0, 128, 255), (int(x.x), int(x.y)), 15)
+            pygame.display.flip()
 
-    def count_gravity_strngth(self, pos, p_strength):
-        if pos.y == 585:
-            return 0.5
-        else:
-            return self.strength + p_strength
+    def apply_gravity(self, pos):
+        return pos.y - self.strength * self.dt
 
-class Player:
+class Entity:
     def __init__(self, x, y):
         self.pos = pygame.Vector2(x, y)
         self.speed = 300  # Pixels per second
-        self.player_grav = 1
+        self.move_vector = pygame.Vector2(random.randint(0, 100), random.randint(0, 100))
+        self.list_of_entities = []
+        self.list_of_entities.append(self)
 
+    def move(self, dt):
+
+        # Normalize diagonal movement so moving diagonally isn't faster
+        if self.move_vector.length() > 0:
+            move_vector = self.move_vector.normalize()
+
+        # Update position
+        self.pos += self.move_vector * self.speed * dt
+
+        # Keep player within screen boundaries (800x600 screen)
+        self.pos.x = max(15, min(785, self.pos.x))
+        self.pos.y = max(15, min(585, self.pos.y))
+
+
+
+class Player(Entity):
     def move(self, dt):
         keys = pygame.key.get_pressed()
 
@@ -57,18 +75,17 @@ class Player:
         self.pos.x = max(15, min(785, self.pos.x))
         self.pos.y = max(15, min(585, self.pos.y))
 
-    def gravity(self):
-        self.pos.y += self.player_grav
-
 game = Game()
 player = Player(400, 300)
+entity = Entity(300, 300)
 
 while game.running:
     game.check_events()
-    player.player_grav = game.count_gravity_strngth(player.pos, player.player_grav)
-    player.gravity()
     player.move(game.dt)
-    game.render(player.pos)
+    game.render([player.pos, entity.pos])
+
+    for x in range(len(entity.list_of_entities)):
+        entity.list_of_entities[x].pos = game.apply_gravity(entity.list_of_entities[x].pos)
 
     # Tick clock and safely convert ms to seconds, capping max dt to 0.1s
     ms = game.clock.tick(60)
