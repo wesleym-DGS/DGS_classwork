@@ -37,12 +37,15 @@ class Client:
 
     def render(self):
         self.screen.fill((0,0,0))
-        for x in
+        for corod in self.render_list:
+            pygame.draw.circle(self.screen, (0,0,0), (corod.x, corod.y), 2)
+        pygame.display.flip()
 
 class Player:
     def __init__(self, screenW, screenH):
         self.pos = pygame.Vector2(screenW/2, screenH/2)
         self.keys = pygame.key.get_pressed()
+
 
     def move(self):
         self.move = pygame.Vector2(0,0)
@@ -57,6 +60,9 @@ class Player:
             self.move.y+= 1
         if self.move.length() > 0:
             self.move = self.move.normalize()
+
+    def add_self_to_render(self, render_list):
+        return render_list.append(self)
 
 
 
