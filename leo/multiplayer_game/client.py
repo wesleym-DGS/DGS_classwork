@@ -3,6 +3,7 @@ import sys
 import json
 import pygame
 
+
 class Client:
     def __init__(self):
         pygame.init()
@@ -13,15 +14,15 @@ class Client:
         pygame.display.set_caption('Multiplayer Game')
         self.clock = pygame.time.Clock()
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.client.settimeout(0.1)  # Add this line right after socket creation
+        self.client.settimeout(0.1)
+        self.render_list = []  # Stores tuples: (Vector2(x, y), (r, g, b))
+        self.game = True
 
         try:
-            self.client.connect((self.server_address[0], self.server_address[1]))
+            self.client.connect(self.server_address)
         except socket.error as e:
             print(f"Connection error: {e}")
             sys.exit()
-        self.render_list = []
-        self.game = True
 
     def receive(self):
         buffer = ''
@@ -31,9 +32,7 @@ class Client:
                 if not chunk:
                     return None
                 buffer += chunk
-            except socket.timeout:
-                return None  # Return None if waiting too long instead of freezing
-            except socket.error:
+            except (socket.timeout, socket.error):
                 return None
         return json.loads(buffer.strip())
 
@@ -43,6 +42,7 @@ class Client:
                 self.game = False
 
     def update_pos(self, player):
+        # Client only sends position coordinates
         payload = json.dumps({
             "y": int(player.pos.x),
             "z": int(player.pos.y)
@@ -53,22 +53,25 @@ class Client:
             server_data = self.receive()
             if server_data:
                 self.render_list.clear()
-                for addr_str, coords in server_data.items():
-                    position_vector = pygame.Vector2(coords[0], coords[1])
-                    self.render_list.append(position_vector)
+                # Server sends: { player_id: [x, y, [r, g, b]] }
+                for addr_str, player_info in server_data.items():
+                    pos = pygame.Vector2(player_info[0], player_info[1])
+                    color = tuple(player_info[2])
+                    self.render_list.append((pos, color))
         except socket.timeout:
-            pass  # Non-blocking pause; continue loop to process events and render
+            pass
         except (socket.error, json.JSONDecodeError):
             self.game = False
 
     def render(self):
-        self.screen.fill((30, 30, 30))  # Dark background
+        self.screen.fill((30, 30, 30))
 
-        # Iterate directly over Vector2 objects in self.render_list
-        for pos in self.render_list:
-            pygame.draw.circle(self.screen, (255, 50, 50), (int(pos.x), int(pos.y)), 15)
+        # Render each player using their position and assigned color
+        for pos, color in self.render_list:
+            pygame.draw.circle(self.screen, color, (int(pos.x), int(pos.y)), 15)
 
         pygame.display.flip()
+
 
 class Player:
     def __init__(self, screenW, screenH):
@@ -91,6 +94,10 @@ class Player:
         if move_dir.length() > 0:
             move_dir = move_dir.normalize()
             self.pos += move_dir * self.speed
+
+        self.pos.x = max(15, min(785, self.pos.x))
+        self.pos.y = max(15, min(585, self.pos.y))
+
 
 client = Client()
 player = Player(client.screenW, client.screenH)
