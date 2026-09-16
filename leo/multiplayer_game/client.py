@@ -73,6 +73,15 @@ class Client:
         pygame.display.flip()
 
 
+class DrawnObject:
+    def __init__(self, pos, player):
+        self.pos1 = pos
+        self.player = player
+
+    def get_second_point(self, pos):
+        self.pos2 = pos
+
+
 class Player:
     def __init__(self, screenW, screenH):
         self.pos = pygame.Vector2(screenW / 2, screenH / 2)

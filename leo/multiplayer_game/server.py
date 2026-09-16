@@ -10,7 +10,6 @@ class Server:
         self.port = 5555
         self.connected_players = {}
         self.lock = threading.Lock()
-
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.server.bind((self.host, self.port))
@@ -62,6 +61,8 @@ class Server:
                             # assigned_color remains unchanged in index 2
 
                     self.update_players(conn)
+
+                    print(self.connected_players)
 
             except (socket.error, json.JSONDecodeError) as e:
                 break
