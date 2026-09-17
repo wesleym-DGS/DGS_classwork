@@ -1,6 +1,12 @@
 import random
 import pygame
 
+'''
+
+the goal is to make a simple physics inspired game just for fun
+
+'''
+
 class Game:
     def __init__(self):
         pygame.init()
@@ -21,6 +27,10 @@ class Game:
             pygame.draw.circle(self.screen, item.colour, (int(item.pos.x), int(item.pos.y)), item.radius)
         pygame.display.flip()
 
+    def apply_gravity(self, entity_list, strength):
+        for entity in entity_list:
+            entity.motion.y += strength * entity.weight
+
     def handle_rect_collision(self, item1, item2, bounciness=1.0):
         item1.hitbox.topleft = (int(item1.pos.x - item1.radius), int(item1.pos.y - item1.radius))
         item2.hitbox.topleft = (int(item2.pos.x - item2.radius), int(item2.pos.y - item2.radius))
@@ -32,64 +42,80 @@ class Game:
             overlap_bottom = item2.hitbox.bottom - item1.hitbox.top
 
             min_overlap = min(overlap_left, overlap_right, overlap_top, overlap_bottom)
+            total_weight = item1.weight + item2.weight
 
             if min_overlap == overlap_left:
                 item1.pos.x -= overlap_left * 0.5
                 item2.pos.x += overlap_left * 0.5
-                item1.motion.x, item2.motion.x = -item1.motion.x * bounciness, -item2.motion.x * bounciness
+                if item1.motion.x > item2.motion.x:
+                    v1 = item1.motion.x
+                    v2 = item2.motion.x
+                    item1.motion.x = ((item1.weight - item2.weight) * v1 + 2 * item2.weight * v2) / total_weight * bounciness
+                    item2.motion.x = ((item2.weight - item1.weight) * v2 + 2 * item1.weight * v1) / total_weight * bounciness
 
             elif min_overlap == overlap_right:
                 item1.pos.x += overlap_right * 0.5
                 item2.pos.x -= overlap_right * 0.5
-                item1.motion.x, item2.motion.x = -item1.motion.x * bounciness, -item2.motion.x * bounciness
+                if item1.motion.x < item2.motion.x:
+                    v1 = item1.motion.x
+                    v2 = item2.motion.x
+                    item1.motion.x = ((item1.weight - item2.weight) * v1 + 2 * item2.weight * v2) / total_weight * bounciness
+                    item2.motion.x = ((item2.weight - item1.weight) * v2 + 2 * item1.weight * v1) / total_weight * bounciness
 
             elif min_overlap == overlap_top:
                 item1.pos.y -= overlap_top * 0.5
                 item2.pos.y += overlap_top * 0.5
-                item1.motion.y, item2.motion.y = -item1.motion.y * bounciness, -item2.motion.y * bounciness
+                if item1.motion.y > item2.motion.y:
+                    v1 = item1.motion.y
+                    v2 = item2.motion.y
+                    item1.motion.y = ((item1.weight - item2.weight) * v1 + 2 * item2.weight * v2) / total_weight * bounciness
+                    item2.motion.y = ((item2.weight - item1.weight) * v2 + 2 * item1.weight * v1) / total_weight * bounciness
 
             elif min_overlap == overlap_bottom:
                 item1.pos.y += overlap_bottom * 0.5
                 item2.pos.y -= overlap_bottom * 0.5
-                item1.motion.y, item2.motion.y = -item1.motion.y * bounciness, -item2.motion.y * bounciness
+                if item1.motion.y < item2.motion.y:
+                    v1 = item1.motion.y
+                    v2 = item2.motion.y
+                    item1.motion.y = ((item1.weight - item2.weight) * v1 + 2 * item2.weight * v2) / total_weight * bounciness
+                    item2.motion.y = ((item2.weight - item1.weight) * v2 + 2 * item1.weight * v1) / total_weight * bounciness
 
 class ExtraEntity():
-    def __init__(self, game):
-        self.pos = pygame.Vector2(random.randint(15,785), random.randint(15,585))
-        self.motion = pygame.Vector2(random.randint(0,20), random.randint(0,20))
+    def __init__(self, game, weight):
+        self.pos = pygame.Vector2(random.randint(15, 785), random.randint(15, 585))
+        self.motion = pygame.Vector2(random.randint(0, 20), random.randint(0, 20))
         self.colour = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
         self.radius = 15
+        self.weight = weight
         self.hitbox = pygame.Rect(int(self.pos.x - self.radius), int(self.pos.y - self.radius), self.radius * 2, self.radius * 2)
         game.renderList.append(self)
-
-    def apply_gravity(self, strength):
-        self.motion.y += strength
 
     def check_bounds(self, screen_width=800, screen_height=600, bounciness=1.0):
         if self.pos.x - self.radius < 0:
             self.pos.x = self.radius
-            self.motion.x = -self.motion.x * bounciness
+            self.motion.x = (-self.motion.x * bounciness) / self.weight
         elif self.pos.x + self.radius > screen_width:
             self.pos.x = screen_width - self.radius
-            self.motion.x = -self.motion.x * bounciness
+            self.motion.x = (-self.motion.x * bounciness) / self.weight
 
         if self.pos.y - self.radius < 0:
             self.pos.y = self.radius
-            self.motion.y = -self.motion.y * bounciness
+            self.motion.y = (-self.motion.y * bounciness) / self.weight
         elif self.pos.y + self.radius > screen_height:
             self.pos.y = screen_height - self.radius
-            self.motion.y = -self.motion.y * bounciness
+            self.motion.y = (-self.motion.y * bounciness) / self.weight
 
     def apply_motion(self, game):
         self.pos += self.motion * game.dt
         self.hitbox.topleft = (int(self.pos.x - self.radius), int(self.pos.y - self.radius))
 
 class Player:
-    def __init__(self, game):
+    def __init__(self, game, weight):
         self.colour = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
         self.pos = pygame.Vector2(400, 300)
         self.motion = pygame.Vector2(0, 0)
         self.radius = 15
+        self.weight = weight
         self.hitbox = pygame.Rect(int(self.pos.x - self.radius), int(self.pos.y - self.radius), self.radius * 2, self.radius * 2)
         game.renderList.append(self)
 
@@ -111,10 +137,7 @@ class Player:
 
         self.motion += move_vector
 
-    def apply_gravity(self, strength):
-        self.motion.y += strength
-
-    def check_bounds(self, screen_width=800, screen_height=600, bounciness=0.75):
+    def check_bounds(self, screen_width=800, screen_height=600, bounciness=1.0):
         if self.pos.x - self.radius < 0:
             self.pos.x = self.radius
             self.motion.x = -self.motion.x * bounciness
@@ -130,17 +153,17 @@ class Player:
             self.motion.y = -self.motion.y * bounciness
 
 game = Game()
-player = Player(game)
-extra = ExtraEntity(game)
+player = Player(game, 100)
+extra = ExtraEntity(game, 1)
 
 while game.game:
+    print(extra.motion)
     game.checks()
+    game.apply_gravity([extra, player], 1.5)
     extra.apply_motion(game)
-    extra.apply_gravity(1.5)
-    extra.check_bounds()
+    extra.check_bounds(800, 600, 0.75)
     game.handle_rect_collision(player, extra)
     player.move(2)
-    player.apply_gravity(1.5)
     player.apply_motion(game)
     player.check_bounds(800, 600, 0.75)
     game.render()
