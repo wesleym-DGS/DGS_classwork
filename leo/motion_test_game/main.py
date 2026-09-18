@@ -33,13 +33,11 @@ class Game:
 
     def apply_gravity(self, strength):
         for entity in self.renderList:
-            if entity.weight > 0:
-                entity.motion.y += strength
+            entity.motion.y += strength * entity.weight
 
     def apply_motion(self, entity):
-        if entity.weight > 0:
-            entity.pos += entity.motion * self.dt
-            entity.hitbox.topleft = (int(entity.pos.x - entity.radius), int(entity.pos.y - entity.radius))
+        entity.pos += entity.motion * self.dt
+        entity.hitbox.topleft = (int(entity.pos.x - entity.radius), int(entity.pos.y - entity.radius))
 
     def check_bounds(self, entity, screen_width=800, screen_height=600, bounciness=0.75):
         if entity.weight == 0:
@@ -168,11 +166,11 @@ class Button:
         game.renderList.append(self)
 
     def pressed(self, game):
-        ExtraEntity(game, 1.0)
+        ExtraEntity(game, random.randint(1,10))
 
 
 game = Game()
-player = Player(game, 1)
+player = Player(game, -1)
 button = Button(game)
 
 while game.game:
