@@ -170,12 +170,12 @@ class Button:
 
 
 game = Game()
-player = Player(game, -1)
+player = Player(game, 100)
 button = Button(game)
 
 while game.game:
     game.checks(button)
-    player.move(2)
+    player.move(3)
     game.apply_gravity(1.5)
     game.all_collision_checks(0.75)
     game.apply_all_motion()
