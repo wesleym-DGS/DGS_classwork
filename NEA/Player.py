@@ -9,7 +9,7 @@ from Base import Base
 class Player(Base):
     def __init__(self, client):
         # passing the players type as a ellipsis
-        super().__init__((0,0), 'E', client)
+        super().__init__((100,100), 'E', client)
 
         #then creating this objects rect so it can be drawn
         self.rect = pygame.Rect(self.pos.x - 7.5, self.pos.y - 7.5, 15, 15)
@@ -34,11 +34,12 @@ class Player(Base):
             move_vector.x += speed * dt
 
         #applying the made vector to the motion
-        self.motion += move_vector
+        self.pos += move_vector
 
     def update(self, renderList, dt):
         self.move(2, dt)
         renderList.append([self.type, (100,100,100), self.rect])
+        print(self.pos)
 
 
 
