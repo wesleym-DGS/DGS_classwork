@@ -17,6 +17,9 @@ import pygame
 class Render:
     def __init__(self):
 
+        #setting up pygame so things can work with it
+        pygame.init()
+
         #this is the creation of the main render list that stores all info about the items to be rendered including
         self.renderList = []
 
@@ -24,6 +27,9 @@ class Render:
         self.screen = pygame.display.set_mode((800, 600))
 
     def render(self):
+
+        #setting the screen to be blank so that things can be rendered onto it
+        self.screen.fill((0, 0, 0))
 
         #this is where the render list gets iterated though to create the objects on the screen
         for item in self.renderList:

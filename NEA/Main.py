@@ -12,5 +12,7 @@ render = Render()
 player = Player(client)
 
 while client.running:
+    client.check_events()
     client.flush_lists([render.render])
     client.update_all(render)
+    render.render()

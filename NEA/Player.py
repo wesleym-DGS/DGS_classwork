@@ -17,7 +17,7 @@ class Player(Base):
         #this motion vector will make it so the players bounce around a bit move and slide like real balls on a flat plane
         self.motion = pygame.Vector2(0, 0)
 
-    def move(self, speed):
+    def move(self, speed, dt):
         #here i am doing the logic for when the player presses a key and makes it so the players motion vec gets modified so the player can move
         keys = pygame.key.get_pressed()
 
@@ -25,14 +25,20 @@ class Player(Base):
         move_vector = pygame.Vector2(0, 0)
 
         if keys[pygame.K_w]:
-            move_vector.y -= speed
+            move_vector.y -= speed * dt
         if keys[pygame.K_s]:
-            move_vector.y += speed
+            move_vector.y += speed * dt
         if keys[pygame.K_a]:
-            move_vector.x -= speed
+            move_vector.x -= speed * dt
         if keys[pygame.K_d]:
-            move_vector.x += speed
+            move_vector.x += speed * dt
 
         #applying the made vector to the motion
         self.motion += move_vector
+
+    def update(self, renderList, dt):
+        self.move(2, dt)
+        renderList.append([self.type, (100,100,100), self.rect])
+
+
 
