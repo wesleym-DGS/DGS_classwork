@@ -3,10 +3,8 @@ this class continents the high level game logic and also is used to direct the o
 the main point of this class is to act as a director and high level manager, so it doesn't use any pygame vectors or pygame logic
 as that is handled by each class via their own internal methods
 '''
+import pygame
 
-from Render import Render
-render = Render()
-#here we are importing the render object and using it to make a instant of the renderer
 
 class Client:
     def __init__(self):
@@ -15,7 +13,7 @@ class Client:
         #main on/off state for the game so it knows when the player has quit
         self.running = True
 
-    def update_all(self):
+    def update_all(self, render):
         #going though all items in the main list and telling them to update themselves so they can be sent to the server or sent directly to the render list
         for item in self.mainList:
             item.update(render.renderList)
@@ -25,8 +23,11 @@ class Client:
         for item in lists:
             item = []
 
-    def game_loop(self):
-        #this is the code that will get exacted every game loop cycle 
-        self.update_all()
-        self.flush_lists([render.renderList])
+    def check_events(self):
+        #doing the normal checks for a pygame instance to make sure it can be closed and so i can check for things like pressing buttons
+        for event in pygame.event.get():
+            #searching though every event that has happened
+            if event.type == pygame.QUIT:
+                self.running = False
+
 
