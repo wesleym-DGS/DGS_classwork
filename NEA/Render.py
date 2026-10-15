@@ -26,9 +26,9 @@ class Render:
         #this is where the render list gets iterated though to create the objects on the screen
         for item in self.renderList:
             #this is where the objects get tested and then drawn based of there type attribute
-            if item[0] == True:
+            if item[0] == 'R':
                 pygame.draw.rect(self.screen, item[1], item[2])
-            else:
+            elif item[0] == 'E':
                 pygame.draw.ellipse(self.screen, item[1], item[2])
         #then update the screen made in the render class
         pygame.display.flip()
