@@ -55,7 +55,7 @@ class Player(Base):
         #inverting there momentum so  they get back into the bounds of the game
         if self.pos.x < 0 or self.pos.x > 785:
             self.motion.x = -self.motion.x
-        elif self.pos.y < 0 or self.pos.y > 585:
+        if self.pos.y < 0 or self.pos.y > 585:
             self.motion.y = -self.motion.y
 
     def update(self, renderList, dt):

@@ -36,9 +36,19 @@ class Render:
 
             #this is where the objects get tested and then drawn based of there type attribute
             if item[0] == 'R':
+
                 pygame.draw.rect(self.screen, item[1], item[2])
+
             elif item[0] == 'E':
+
                 pygame.draw.ellipse(self.screen, item[1], item[2])
+
+            elif item[0] == 'B':
+
+                pygame.draw.rect(self.screen, item[1], item[2])
+                text_surface = item[4].render(item[3], True, (255,255,255))
+                text_rect = text_surface.get_rect(center=item[2].center)
+                self.screen.blit(text_surface, text_rect)
 
         #then update the screen made in the render class
         pygame.display.flip()

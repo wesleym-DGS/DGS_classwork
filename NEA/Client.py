@@ -12,6 +12,9 @@ class Client:
         #the main list is going to store all objects in the game that can be modified by the client, e.g the player and all created objects
         self.mainList = []
 
+        #this is a button list to make it so the check that will test if a click was in a button can work
+        self.buttonList = []
+
         #main on/off state for the game so it knows when the player has quit
         self.running = True
 
@@ -44,3 +47,9 @@ class Client:
             #searching though every event that has happened
             if event.type == pygame.QUIT:
                 self.running = False
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                for item in self.buttonList:
+                    if event.button == 1:
+                        if item.rect.collidepoint(event.pos):
+                            item.pressed()

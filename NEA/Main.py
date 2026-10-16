@@ -7,11 +7,13 @@ wants to join the server. The idea is that nothing gets declared in this file an
 from Client import Client
 from Render import Render
 from Player import Player
+from testButton import testButton
 
 #creating all objects so they can be used in the main loop
 client = Client()
 render = Render()
 player = Player(client)
+button = testButton(client)
 
 #this is the main game loop where all the main game running operations are done
 while client.running:
