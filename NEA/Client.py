@@ -27,6 +27,7 @@ class Client:
         for item in self.mainList:
             item.update(render.renderList, self.dt)
 
+        #updating the time delta so the players movement dosn't change with frame rate
         self.dt = self.clock.tick(60)/1000
 
     def flush_lists(self, lists):
