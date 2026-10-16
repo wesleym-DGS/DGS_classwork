@@ -18,17 +18,22 @@ class Client:
         #making a time delta so all objects and moving things can move per frame
         self.dt = 60
 
+        #adding a time clock so the time delta can be updated correctly
+        self.clock = pygame.time.Clock()
+
     def update_all(self, render):
 
         #going though all items in the main list and telling them to update themselves so they can be sent to the server or sent directly to the render list
         for item in self.mainList:
             item.update(render.renderList, self.dt)
 
+        self.dt = self.clock.tick(60)/1000
+
     def flush_lists(self, lists):
 
         #here i am flushing all the lists that need to be flushed to prevent rapid RAM filling
         for item in lists:
-            item = []
+            item.clear()
 
     def check_events(self):
 
@@ -38,5 +43,3 @@ class Client:
             #searching though every event that has happened
             if event.type == pygame.QUIT:
                 self.running = False
-
-

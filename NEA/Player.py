@@ -8,6 +8,7 @@ from Base import Base
 
 class Player(Base):
     def __init__(self, client):
+
         # passing the players type as a ellipsis
         super().__init__((100,100), 'E', client)
 
@@ -18,6 +19,7 @@ class Player(Base):
         self.motion = pygame.Vector2(0, 0)
 
     def move(self, speed, dt):
+
         #here i am doing the logic for when the player presses a key and makes it so the players motion vec gets modified so the player can move
         keys = pygame.key.get_pressed()
 
@@ -33,13 +35,30 @@ class Player(Base):
         if keys[pygame.K_d]:
             move_vector.x += speed * dt
 
+        #trying to normalize the movement vector but catching the error if it is zero
+        try:
+
+            #normalizing the move vector so that diagonal movement doesn't cause extra movement
+            move_vector.normalize()
+
+        except ValueError:
+
+            #if the error happens then we just move on
+            pass
+
         #applying the made vector to the motion
         self.pos += move_vector
 
     def update(self, renderList, dt):
-        self.move(2, dt)
+
+        #when the game updates this object the player needs move
+        self.move(20, dt)
+
+        #this is when the rect for the player rendering gets updated to the current pos
+        self.rect = pygame.Rect(self.pos.x - 7.5, self.pos.y - 7.5, 15, 15)
+
+        #adding the object to the freshly flushed render list
         renderList.append([self.type, (100,100,100), self.rect])
-        print(self.pos)
 
-
-
+        #this was a debug line to see if the players pos was working
+        #print(self.pos)
