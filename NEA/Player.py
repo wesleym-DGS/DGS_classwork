@@ -18,10 +18,6 @@ class Player(Base):
         #this motion vector will make it so the players bounce around a bit move and slide like real balls on a flat plane
         self.motion = pygame.Vector2(0, 0)
 
-        #keep player within screen
-        self.pos.x = max(15, min(785, self.pos.x))
-        self.pos.y = max(15, min(585, self.pos.y))
-
     def move(self, speed, dt):
 
         #here i am doing the logic for when the player presses a key and makes it so the players motion vec gets modified so the player can move
