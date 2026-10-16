@@ -47,12 +47,18 @@ class Player(Base):
             pass
 
         #applying the made vector to the motion
-        self.pos += move_vector
+        self.motion += move_vector
 
     def update(self, renderList, dt):
 
         #when the game updates this object the player needs move
         self.move(20, dt)
+
+        #applying the motion that was gathered in the move method
+        self.pos += self.motion
+
+        #slowing the player down to mimic air resistance
+        self.motion += (-self.motion) * 0.25
 
         #this is when the rect for the player rendering gets updated to the current pos
         self.rect = pygame.Rect(self.pos.x - 7.5, self.pos.y - 7.5, 15, 15)

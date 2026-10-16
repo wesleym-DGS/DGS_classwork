@@ -19,11 +19,11 @@ while client.running:
     #flushing all lists to prevent RAM over use
     client.flush_lists([render.renderList])
 
-    #checking events to make sure windows close and buttons gets pressed
-    client.check_events()
-
     #updating all objects in the main list so they can be rendered
     client.update_all(render)
+
+    #checking events to make sure windows close and buttons gets pressed
+    client.check_events()
 
     #rendering all objects to the screen
     render.render()

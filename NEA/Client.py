@@ -1,5 +1,5 @@
 '''
-this class continents the high level game logic and also is used to direct the other classes to where they need to be used
+this class contains the high level game logic and also is used to direct the other classes to where they need to be used
 the main point of this class is to act as a director and high level manager, so it doesn't use any pygame vectors or pygame logic
 as that is handled by each class via their own internal methods
 '''
@@ -23,12 +23,12 @@ class Client:
 
     def update_all(self, render):
 
+        #updating the time delta so the players movement dosn't change with frame rate
+        self.dt = self.clock.tick(60)/1000
+
         #going though all items in the main list and telling them to update themselves so they can be sent to the server or sent directly to the render list
         for item in self.mainList:
             item.update(render.renderList, self.dt)
-
-        #updating the time delta so the players movement dosn't change with frame rate
-        self.dt = self.clock.tick(60)/1000
 
     def flush_lists(self, lists):
 
