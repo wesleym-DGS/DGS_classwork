@@ -49,19 +49,19 @@ class Player(Base):
         #applying the made vector to the motion
         self.motion += move_vector
 
-    def check_bounds(self):
+    def check_bounds(self, bounce):
 
         #checking to see if the player is outside the bounds of the game and if they are,
         #inverting there momentum so  they get back into the bounds of the game
         if self.pos.x < 0 or self.pos.x > 785:
-            self.motion.x = -self.motion.x
+            self.motion.x = -self.motion.x * bounce
         if self.pos.y < 0 or self.pos.y > 585:
-            self.motion.y = -self.motion.y
+            self.motion.y = -self.motion.y * bounce
 
     def update(self, renderList, dt):
 
         #when the game updates this object the player needs move
-        self.move(20, dt)
+        self.move(50, dt)
 
         #applying the motion that was gathered in the move method
         self.pos += self.motion
@@ -70,13 +70,13 @@ class Player(Base):
         self.motion += (-self.motion) * 0.05
 
         #executing the bounds check and making it so they get put back into the screen
-        self.check_bounds()
+        self.check_bounds(1)
 
         #this is when the rect for the player rendering gets updated to the current pos
         self.rect = pygame.Rect(self.pos.x - 7.5, self.pos.y - 7.5, 15, 15)
 
         #adding the object to the freshly flushed render list
-        renderList.append([self.type, (100,100,100), self.rect])
+        renderList.append([self.type, (255,0,0), self.rect])
 
         #this was a debug line to see if the players pos was working
         #print(self.pos)

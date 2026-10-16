@@ -28,4 +28,4 @@ while client.running:
     client.check_events()
 
     #rendering all objects to the screen
-    render.render()
+    render.render(client)

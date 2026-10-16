@@ -9,6 +9,9 @@ import pygame
 class Client:
     def __init__(self):
 
+        #this is going to decide weather or not the game is in the room mode or in main menu mode
+        self.mode = 'Menu'
+
         #the main list is going to store all objects in the game that can be modified by the client, e.g the player and all created objects
         self.mainList = []
 
@@ -31,7 +34,10 @@ class Client:
 
         #going though all items in the main list and telling them to update themselves so they can be sent to the server or sent directly to the render list
         for item in self.mainList:
-            item.update(render.renderList, self.dt)
+            if self.mode == 'Menu' and item.type == 'B':
+                item.update(render.renderList, self.dt)
+            elif self.mode == 'Game'and item.type != 'B':
+                item.update(render.renderList, self.dt)
 
     def flush_lists(self, lists):
 
@@ -51,5 +57,5 @@ class Client:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 for item in self.buttonList:
                     if event.button == 1:
-                        if item.rect.collidepoint(event.pos):
-                            item.pressed()
+                        if item.rect.collidepoint(event.pos) and self.mode == 'Menu':
+                            item.pressed(self)
