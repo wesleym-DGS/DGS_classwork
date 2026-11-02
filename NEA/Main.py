@@ -5,15 +5,17 @@ wants to join the server. The idea is that nothing gets declared in this file an
 
 #importing all the other content from the other classes so they can be created and used
 from Client import Client
+from ChatButton import ChatButton
 from Render import Render
 from Player import Player
-from testButton import testButton
+from PlayButton import PlayButton
 
 #creating all objects so they can be used in the main loop
 client = Client()
 render = Render()
 player = Player(client)
-button = testButton(client)
+button = PlayButton(client)
+chat_button = ChatButton(client)
 
 #this is the main game loop where all the main game running operations are done
 while client.running:
@@ -28,4 +30,4 @@ while client.running:
     client.check_events()
 
     #rendering all objects to the screen
-    render.render(client)
+    render.render()

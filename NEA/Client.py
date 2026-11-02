@@ -5,7 +5,6 @@ as that is handled by each class via their own internal methods
 '''
 import pygame
 
-
 class Client:
     def __init__(self):
 
@@ -14,9 +13,6 @@ class Client:
 
         #the main list is going to store all objects in the game that can be modified by the client, e.g the player and all created objects
         self.mainList = []
-
-        #this is a button list to make it so the check that will test if a click was in a button can work
-        self.buttonList = []
 
         #main on/off state for the game so it knows when the player has quit
         self.running = True
@@ -29,33 +25,36 @@ class Client:
 
     def update_all(self, render):
 
-        #updating the time delta so the players movement dosn't change with frame rate
+        #updating the time delta so the players movement doesn't change with frame rate
         self.dt = self.clock.tick(60)/1000
 
         #going though all items in the main list and telling them to update themselves so they can be sent to the server or sent directly to the render list
         for item in self.mainList:
             if self.mode == 'Menu' and item.type == 'B':
                 item.update(render.renderList, self.dt)
-            elif self.mode == 'Game'and item.type != 'B':
+            elif self.mode == 'Game' and item.type != 'B':
                 item.update(render.renderList, self.dt)
 
     def flush_lists(self, lists):
 
-        #here i am flushing all the lists that need to be flushed to prevent rapid RAM filling
+        #here I am flushing all the lists that need to be flushed to prevent rapid RAM filling
         for item in lists:
             item.clear()
 
     def check_events(self):
 
-        #doing the normal checks for a pygame instance to make sure it can be closed and so i can check for things like pressing buttons
+        #doing the normal checks for a pygame instance to make sure it can be closed, and so I can check for things like pressing buttons
         for event in pygame.event.get():
 
             #searching though every event that has happened
             if event.type == pygame.QUIT:
                 self.running = False
 
+            #testing for a mouse button click and checking if we are in menu mode so that we can avoid unneeded checks
             if event.type == pygame.MOUSEBUTTONDOWN:
-                for item in self.buttonList:
-                    if event.button == 1:
-                        if item.rect.collidepoint(event.pos) and self.mode == 'Menu':
+                for item in self.mainList:
+                    if event.button == 1 and (item.type == 'B' or item.type == 'CB'):
+
+                        #checking if the event position where the mouse button was pressed was in a button
+                        if item.rect.collidepoint(event.pos):
                             item.pressed(self)

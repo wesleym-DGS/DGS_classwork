@@ -7,10 +7,10 @@ import pygame
 
 from Base import Base
 
-class Button(Base):
+class ButtonBase(Base):
     def __init__(self, text, client, pos, width, height, colour):
 
-        #as this is a object that needs rendering it uses the base class
+        #as this is an object that needs rendering it uses the base class
         super().__init__(pos, 'B', client)
 
         #creating the font that the button uses when it gets rendered
@@ -25,11 +25,7 @@ class Button(Base):
         #making the rect that all the text and the colors get based around
         self.rect = pygame.Rect(self.pos.x, self.pos.y, width, height)
 
-        #appending the button to the button list
-        client.buttonList.append(self)
-
     def update(self, renderList, dt):
 
         #happening the needed data to the render list so it can get rendered
         renderList.append([self.type, self.colour, self.rect, self.text, self.font])
-

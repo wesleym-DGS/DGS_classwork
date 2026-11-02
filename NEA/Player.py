@@ -9,8 +9,8 @@ from Base import Base
 class Player(Base):
     def __init__(self, client):
 
-        # passing the players type as a ellipsis
-        super().__init__((100,100), 'E', client)
+        #passing the players type as an ellipsis
+        super().__init__((150,150), 'E', client)
 
         #then creating this objects rect so it can be drawn
         self.rect = pygame.Rect(self.pos.x - 7.5, self.pos.y - 7.5, 15, 15)
@@ -18,9 +18,11 @@ class Player(Base):
         #this motion vector will make it so the players bounce around a bit move and slide like real balls on a flat plane
         self.motion = pygame.Vector2(0, 0)
 
+
+
     def move(self, speed, dt):
 
-        #here i am doing the logic for when the player presses a key and makes it so the players motion vec gets modified so the player can move
+        #here I'm doing the logic for when the player presses a key and makes it so the players motion vec gets modified so the player can move
         keys = pygame.key.get_pressed()
 
         #setting up the vector that modifies the motion

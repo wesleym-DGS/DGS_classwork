@@ -26,7 +26,7 @@ class Render:
         #this is the main screen for each client
         self.screen = pygame.display.set_mode((800, 600))
 
-    def render(self, client):
+    def render(self):
 
         #setting the screen to be blank so that things can be rendered onto it
         self.screen.fill((50, 50, 50))
@@ -36,9 +36,17 @@ class Render:
             #this is where the objects get tested and then drawn based of there type attribute
             if item[0] == 'R':
                 pygame.draw.rect(self.screen, item[1], item[2])
+
             elif item[0] == 'E':
                 pygame.draw.ellipse(self.screen, item[1], item[2])
+
             elif item[0] == 'B':
+                pygame.draw.rect(self.screen, item[1], item[2])
+                text_surface = item[4].render(item[3], True, (255,255,255))
+                text_rect = text_surface.get_rect(center=item[2].center)
+                self.screen.blit(text_surface, text_rect)
+
+            elif item[0] == 'CB':
                 pygame.draw.rect(self.screen, item[1], item[2])
                 text_surface = item[4].render(item[3], True, (255,255,255))
                 text_rect = text_surface.get_rect(center=item[2].center)
