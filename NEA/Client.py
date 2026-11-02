@@ -3,6 +3,7 @@ this class contains the high level game logic and also is used to direct the oth
 the main point of this class is to act as a director and high level manager, so it doesn't use any pygame vectors or pygame logic
 as that is handled by each class via their own internal methods
 '''
+
 import pygame
 
 class Client:
@@ -53,8 +54,17 @@ class Client:
             #testing for a mouse button click and checking if we are in menu mode so that we can avoid unneeded checks
             if event.type == pygame.MOUSEBUTTONDOWN:
                 for item in self.mainList:
-                    if event.button == 1 and (item.type == 'B' or item.type == 'CB'):
+                    if event.button == 1:
 
-                        #checking if the event position where the mouse button was pressed was in a button
-                        if item.rect.collidepoint(event.pos):
-                            item.pressed(self)
+                        #differing the menu and game button modes so that pressing an overlapping button won't crash the game
+                        if self.mode == 'Menu' and item.type == 'B':
+
+                            #checking if the event position where the mouse button was pressed was in a button
+                            if item.rect.collidepoint(event.pos):
+                                item.pressed(self)
+
+                        elif self.mode == 'Game' and item.type == 'CB':
+
+                            #checking if the event position where the mouse button was pressed was in a button
+                            if item.rect.collidepoint(event.pos):
+                                item.pressed()
