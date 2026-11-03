@@ -8,7 +8,7 @@ import pygame
 
 from Base import Base
 
-class ButtonBase(Base):
+class MenuButtonBase(Base):
     def __init__(self, text, client, pos, width, height, colour):
 
         #as this is an object that needs rendering it uses the base class
