@@ -41,19 +41,20 @@ class Render:
                 pygame.draw.ellipse(self.screen, item[1], item[2])
 
             elif item[0] == 'B' or item[0] == 'CB':
+
+                #drawing all the parts for a button including the text and the rect for it
                 pygame.draw.rect(self.screen, item[1], item[2])
                 text_surface = item[4].render(item[3], True, (255,255,255))
                 text_rect = text_surface.get_rect(center=item[2].center)
                 self.screen.blit(text_surface, text_rect)
 
-            elif item[0] == 'TD':
+            elif item[0] == 'TD' or item[0] == 'TDM':
+                #working though each line and splitting it at the \n so it can be displayed as many lines
                 for i, line in enumerate(item[2].split('\n')):
                     if line:
+                        #drawing the text
                         text_surface = item[1].render(line, True, (255, 255, 255))
                         self.screen.blit(text_surface, (item[3].x + 520, item[3].y + (i * item[1].get_linesize())))
-
-            elif item[0] == 'TDM':
-                pygame.draw.rect(self.screen, item[1], item[2])
 
         #then update the screen made in the render class
         pygame.display.flip()

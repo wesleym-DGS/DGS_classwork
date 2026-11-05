@@ -18,7 +18,10 @@ class ChatButton(InGameButtonBase):
         print('pressed')
 
         if not client.typing:
+
             #changing the client to typing mode so the player doesn't move
             client.typing = True
         else:
+
+            #changing the typing back to False on second press so the player can leave the typing mode
             client.typing = False

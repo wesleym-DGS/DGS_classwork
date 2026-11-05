@@ -13,7 +13,7 @@ class ChatTextDisplay(InGameTextBase):
 
     def update(self, renderList, dt, typing):
 
+        #updating the text in the text box and then adding self to the render list
         self.text = self.client.message
-
         if self.text != '':
             renderList.append([self.type, self.font, self.text, self.pos])
