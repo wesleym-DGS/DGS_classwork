@@ -24,6 +24,12 @@ class Client:
         #adding a time clock so the time delta can be updated correctly
         self.clock = pygame.time.Clock()
 
+        #this dictates whether key inputs for typing out a message or for movement
+        self.typing = False
+
+        #this is the message, and it gets cleared when it is sent
+        self.message = ''
+
     def update_all(self, render):
 
         #updating the time delta so the players movement doesn't change with frame rate
@@ -31,10 +37,13 @@ class Client:
 
         #going though all items in the main list and telling them to update themselves so they can be sent to the server or sent directly to the render list
         for item in self.mainList:
-            if self.mode == 'Menu' and item.type == 'B':
-                item.update(render.renderList, self.dt)
+            if self.mode == 'Menu' and (item.type == 'B' or item.type == 'TDM'):
+                item.update(render.renderList, self.dt, self.typing)
             elif self.mode == 'Game' and item.type != 'B':
-                item.update(render.renderList, self.dt)
+                item.update(render.renderList, self.dt, self.typing)
+
+        if len(self.message[self.message.rfind('\n')+1:]) >= 10:
+            self.message += '\n'
 
     def flush_lists(self, lists):
 
@@ -67,4 +76,17 @@ class Client:
 
                             #checking if the event position where the mouse button was pressed was in a button
                             if item.rect.collidepoint(event.pos):
-                                item.pressed()
+                                item.pressed(self)
+
+            if event.type == pygame.KEYDOWN and self.typing:
+                if event.key == pygame.K_BACKSPACE:
+                    if self.message[len(self.message)-1:] == '\n':
+                        self.message = self.message[:-2]
+                    else:
+                        self.message = self.message[:-1]
+
+                elif event.key == pygame.K_RETURN and self.typing:
+                    self.message = ''
+                    self.typing = False
+                else:
+                    self.message += event.unicode

@@ -61,10 +61,11 @@ class Player(Base):
         if self.pos.y < 0 or self.pos.y > 585:
             self.motion.y = -self.motion.y * bounce
 
-    def update(self, renderList, dt):
+    def update(self, renderList, dt, typing):
 
         #when the game updates this object the player needs move
-        self.move(50, dt)
+        if False == typing:
+            self.move(50, dt)
 
         #applying the motion that was gathered in the move method
         self.pos += self.motion

@@ -9,6 +9,7 @@ from ChatButton import ChatButton
 from Render import Render
 from Player import Player
 from PlayButton import PlayButton
+from ChatTextDisplay import ChatTextDisplay
 
 #creating all objects so they can be used in the main loop
 client = Client()
@@ -16,6 +17,7 @@ render = Render()
 player = Player(client)
 button = PlayButton(client)
 chat_button = ChatButton(client)
+text_chat = ChatTextDisplay(client)
 
 #this is the main game loop where all the main game running operations are done
 while client.running:

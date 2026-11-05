@@ -26,7 +26,7 @@ class MenuButtonBase(Base):
         #making the rect that all the text and the colors get based around
         self.rect = pygame.Rect(self.pos.x, self.pos.y, width, height)
 
-    def update(self, renderList, dt):
+    def update(self, renderList, dt, typing):
 
         #happening the needed data to the render list so it can get rendered
         renderList.append([self.type, self.colour, self.rect, self.text, self.font])
