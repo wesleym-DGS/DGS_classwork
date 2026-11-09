@@ -25,7 +25,7 @@ text_chat = ChatTextDisplay(client)
 while client.running:
 
     #flushing all lists to prevent RAM over use
-    client.flush_lists([render.renderList])
+    client.flush_lists([render.renderList, client.sendToServer])
 
     #updating all objects in the main list so they can be rendered
     client.update_all(render)

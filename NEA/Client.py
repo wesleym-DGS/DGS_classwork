@@ -46,10 +46,10 @@ class Client:
         #going though all items in the main list and telling them to update themselves so they can be sent to the server or sent directly to the render list
         for item in self.mainList:
             if self.mode == 'Menu' and (item.type == 'B' or item.type == 'TDM'):
+                item.update(render.renderList, self.dt, self.typing, pygame.mouse.get_pos())
+            elif self.mode == 'Game' and (item.type == 'E' or item.type == 'R'):
                 item.update(self.sendToServer, self.dt, self.typing, pygame.mouse.get_pos())
-            elif self.mode == 'Game' and (item.type == 'CB' or item.type == 'TD' or item.type == 'E' or item.type == 'R'):
-                item.update(self.sendToServer, self.dt, self.typing, pygame.mouse.get_pos())
-            elif self.mode == 'Game' and item.type == 'DRAW':
+            elif self.mode == 'Game' and (item.type == 'DRAW' or item.type == 'CB' or item.type == 'TD'):
                 item.update(render.renderList, self.dt, self.typing, pygame.mouse.get_pos())
 
         if len(self.message[self.message.rfind('|')+1:]) >= 10:
