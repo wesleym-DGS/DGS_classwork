@@ -5,6 +5,8 @@ as that is handled by each class via their own internal methods
 '''
 
 import pygame
+from DrawElipse import DrawElipse
+from DrawnObjectBase import DrawnObjectBase
 
 class Client:
     def __init__(self):
@@ -14,6 +16,10 @@ class Client:
 
         #the main list is going to store all objects in the game that can be modified by the client, e.g the player and all created objects
         self.mainList = []
+
+        self.sendToServer = []
+
+        self.objectBeingDrawn = None
 
         #main on/off state for the game so it knows when the player has quit
         self.running = True
@@ -27,6 +33,8 @@ class Client:
         #this dictates whether key inputs for typing out a message or for movement
         self.typing = False
 
+        self.drawing = False
+
         #this is the message, and it gets cleared when it is sent
         self.message = ''
 
@@ -38,12 +46,14 @@ class Client:
         #going though all items in the main list and telling them to update themselves so they can be sent to the server or sent directly to the render list
         for item in self.mainList:
             if self.mode == 'Menu' and (item.type == 'B' or item.type == 'TDM'):
-                item.update(render.renderList, self.dt, self.typing)
-            elif self.mode == 'Game' and item.type != 'B':
-                item.update(render.renderList, self.dt, self.typing)
+                item.update(self.sendToServer, self.dt, self.typing, pygame.mouse.get_pos())
+            elif self.mode == 'Game' and (item.type == 'CB' or item.type == 'TD' or item.type == 'E' or item.type == 'R'):
+                item.update(self.sendToServer, self.dt, self.typing, pygame.mouse.get_pos())
 
-        if len(self.message[self.message.rfind('\n')+1:]) >= 10:
-            self.message += '\n'
+        if len(self.message[self.message.rfind('|')+1:]) >= 10:
+            self.message += '|'
+
+        render.renderList = self.sendToServer
 
     def flush_lists(self, lists):
 
@@ -60,33 +70,61 @@ class Client:
             if event.type == pygame.QUIT:
                 self.running = False
 
-            #testing for a mouse button click and checking if we are in menu mode so that we can avoid unneeded checks
             if event.type == pygame.MOUSEBUTTONDOWN:
-                for item in self.mainList:
-                    if event.button == 1:
+                if event.button == 1:
 
-                        #differing the menu and game button modes so that pressing an overlapping button won't crash the game
-                        if self.mode == 'Menu' and item.type == 'B':
+                    # checking whether the player has clicked a button
+                    buttonPressed = False
 
-                            #checking if the event position where the mouse button was pressed was in a button
-                            if item.rect.collidepoint(event.pos):
+                    for item in self.mainList:
+                        if item.type in ('B', 'CB') and item.rect.collidepoint(event.pos):
+
+                            # only allowing buttons in the current mode to be pressed
+                            if (self.mode == 'Menu' and item.type == 'B') or (self.mode == 'Game' and item.type == 'CB'):
                                 item.pressed(self)
+                                buttonPressed = True
+                                break
 
-                        elif self.mode == 'Game' and item.type == 'CB':
+                    # only drawing objects when the player is in game mode
+                    if not buttonPressed and self.mode == 'Game':
 
-                            #checking if the event position where the mouse button was pressed was in a button
-                            if item.rect.collidepoint(event.pos):
-                                item.pressed(self)
+                        if not self.drawing:
+                            self.objectBeingDrawn = DrawElipse(event.pos, event.pos, self)
+                            self.drawing = True
+
+                        else:
+                            newObject = DrawnObjectBase(self,self.objectBeingDrawn.pos,self.objectBeingDrawn.type,self.objectBeingDrawn.colour,self.objectBeingDrawn.rect.copy())
+
+                            # removing the temporary drawing object
+                            self.mainList.remove(self.objectBeingDrawn)
+                            self.objectBeingDrawn = None
+                            self.drawing = False
+
+            if event.type == pygame.KEYDOWN and self.drawing:
+
+                # checking if the player wants to cancel the current drawing
+                if event.key == pygame.K_ESCAPE:
+
+                    # removing the temporary object from the main list
+                    if self.objectBeingDrawn is not None:
+                        self.mainList.remove(self.objectBeingDrawn)
+
+                    # clearing the object reference and drawing state
+                    self.objectBeingDrawn = None
+                    self.drawing = False
 
             if event.type == pygame.KEYDOWN and self.typing:
+
+                #performing checks for key edge cases and also checking for length of string so I can add a \n
                 if event.key == pygame.K_BACKSPACE:
-                    if self.message[len(self.message)-1:] == '\n':
+                    if self.message[len(self.message)-1:] == '|':
                         self.message = self.message[:-2]
                     else:
                         self.message = self.message[:-1]
 
-                elif event.key == pygame.K_RETURN and self.typing:
+                elif event.key == pygame.K_RETURN:
                     self.message = ''
                     self.typing = False
+
                 else:
                     self.message += event.unicode

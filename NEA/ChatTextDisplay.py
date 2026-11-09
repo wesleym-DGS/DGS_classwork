@@ -8,13 +8,15 @@ from InGameTextBase import InGameTextBase
 
 class ChatTextDisplay(InGameTextBase):
     def __init__(self, client):
-        #passing up the needed vars and also saving the client for later use
-        super().__init__(client,(10,10))
-        self.client_msg = client.message
 
-    def update(self, renderList, dt, typing):
+        #passing up the needed vars and also saving the client for later use
+        super().__init__(client,(100, 400))
+        self.client = client
+
+    def update(self, renderList, dt, typing, mousePos):
 
         #updating the text in the text box and then adding self to the render list
-        self.text = self.client_msg
+        self.text = self.client.message
+
         if self.text != '':
             renderList.append([self.type, self.font, self.text, self.pos])

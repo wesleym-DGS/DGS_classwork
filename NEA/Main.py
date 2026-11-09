@@ -1,6 +1,8 @@
 '''
+
 this is going to be where all the code is brought together and assembled into the main file that gets ran when the player
 wants to join the server. The idea is that nothing gets declared in this file and no calculations are done here
+
 '''
 
 #importing all the other content from the other classes so they can be created and used

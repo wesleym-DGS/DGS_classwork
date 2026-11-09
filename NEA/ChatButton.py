@@ -10,7 +10,7 @@ class ChatButton(InGameButtonBase):
     def __init__(self, client):
 
         #calling the parent init method and passing in the needed parameters
-        super().__init__('CHAT', client, (0,0), 100, 60, (100, 0, 100))
+        super().__init__('CHAT', client, (0,100), 100, 60, (100, 0, 100))
 
     def pressed(self, client):
 

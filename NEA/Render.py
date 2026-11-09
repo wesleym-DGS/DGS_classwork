@@ -50,11 +50,11 @@ class Render:
 
             elif item[0] == 'TD' or item[0] == 'TDM':
                 #working though each line and splitting it at the \n so it can be displayed as many lines
-                for i, line in enumerate(item[2].split('\n')):
+                for i, line in enumerate(item[2].split('|')):
                     if line:
                         #drawing the text
                         text_surface = item[1].render(line, True, (255, 255, 255))
-                        self.screen.blit(text_surface, (item[3].x + 520, item[3].y + (i * item[1].get_linesize())))
+                        self.screen.blit(text_surface, (item[3].x, item[3].y + (i * item[1].get_linesize())))
 
         #then update the screen made in the render class
         pygame.display.flip()
