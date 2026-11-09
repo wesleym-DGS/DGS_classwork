@@ -10,7 +10,7 @@ from Base import Base
 
 class DrawObjectBase(Base):
     def __init__(self, client, pos, mousePos, type, colour):
-        super().__init__(pos, type, client)
+        super().__init__(pos, 'DRAW', client)
 
         #converting the mouse position into a vector
         mousePos = pygame.Vector2(mousePos)
@@ -22,6 +22,8 @@ class DrawObjectBase(Base):
         self.rect.normalize()
 
         self.colour = colour
+
+        self.typeS = type
 
     def update(self, renderList, dt, typing, mousePos):
 
@@ -35,4 +37,4 @@ class DrawObjectBase(Base):
         self.rect.normalize()
 
         #adding the object to the render list
-        renderList.append([self.type, self.colour, self.rect])
+        renderList.append([self.type, self.colour, self.rect, self.typeS])

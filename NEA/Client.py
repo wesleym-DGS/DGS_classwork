@@ -49,6 +49,8 @@ class Client:
                 item.update(self.sendToServer, self.dt, self.typing, pygame.mouse.get_pos())
             elif self.mode == 'Game' and (item.type == 'CB' or item.type == 'TD' or item.type == 'E' or item.type == 'R'):
                 item.update(self.sendToServer, self.dt, self.typing, pygame.mouse.get_pos())
+            elif self.mode == 'Game' and item.type == 'DRAW':
+                item.update(render.renderList, self.dt, self.typing, pygame.mouse.get_pos())
 
         if len(self.message[self.message.rfind('|')+1:]) >= 10:
             self.message += '|'
@@ -93,7 +95,7 @@ class Client:
                             self.drawing = True
 
                         else:
-                            newObject = DrawnObjectBase(self,self.objectBeingDrawn.pos,self.objectBeingDrawn.type,self.objectBeingDrawn.colour,self.objectBeingDrawn.rect.copy())
+                            newObject = DrawnObjectBase(self,self.objectBeingDrawn.pos,self.objectBeingDrawn.typeS,self.objectBeingDrawn.colour,self.objectBeingDrawn.rect.copy())
 
                             # removing the temporary drawing object
                             self.mainList.remove(self.objectBeingDrawn)

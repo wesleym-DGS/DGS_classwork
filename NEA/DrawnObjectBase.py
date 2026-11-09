@@ -10,7 +10,6 @@ from Base import Base
 class DrawnObjectBase(Base):
     def __init__(self, client ,pos, type, colour, rect):
         super().__init__(pos, type, client)
-
         self.rect = rect
         self.colour = tuple(min(255, value + 30) for value in colour)
 

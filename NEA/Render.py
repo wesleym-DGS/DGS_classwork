@@ -40,6 +40,12 @@ class Render:
             elif item[0] == 'E':
                 pygame.draw.ellipse(self.screen, item[1], item[2])
 
+            elif item[0] == 'DRAW':
+                if item[3] == 'E':
+                    pygame.draw.ellipse(self.screen, item[1], item[2])
+                elif item[3] == 'R':
+                    pygame.draw.rect(self.screen, item[1], item[2])
+
             elif item[0] == 'B' or item[0] == 'CB':
 
                 #drawing all the parts for a button including the text and the rect for it
