@@ -35,10 +35,12 @@ class Render:
         for item in self.renderList:
             #this is where the objects get tested and then drawn based of there type attribute
             if item[0] == 'R':
-                pygame.draw.rect(self.screen, item[1], item[2])
+                itemRect = pygame.Rect(item[2], item[3], item[4], item[5])
+                pygame.draw.rect(self.screen, item[1], itemRect)
 
             elif item[0] == 'E':
-                pygame.draw.ellipse(self.screen, item[1], item[2])
+                itemRect = pygame.Rect(item[2], item[3], item[4], item[5])
+                pygame.draw.ellipse(self.screen, item[1], itemRect)
 
             elif item[0] == 'DRAW':
                 if item[3] == 'E':

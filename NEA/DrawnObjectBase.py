@@ -14,4 +14,4 @@ class DrawnObjectBase(Base):
         self.colour = tuple(min(255, value + 30) for value in colour)
 
     def update(self, renderList, dt, typing, mousePos):
-        renderList.append([self.type, self.colour, self.rect])
+        renderList.append([self.type, self.colour, self.rect.x, self.rect.y, self.rect.width, self.rect.height])

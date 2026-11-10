@@ -80,7 +80,7 @@ class Player(Base):
         self.rect = pygame.Rect(self.pos.x - 7.5, self.pos.y - 7.5, 15, 15)
 
         #adding the object to the freshly flushed render list
-        renderList.append([self.type, (255,0,0), self.rect])
+        renderList.append([self.type, (255,0,0), self.rect.x, self.rect.y, self.rect.width, self.rect.height])
 
         #this was a debug line to see if the players pos was working
         #print(self.pos)
