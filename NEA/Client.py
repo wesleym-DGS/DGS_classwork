@@ -36,7 +36,7 @@ class Client:
         self.clock = pygame.time.Clock()
 
         #this dictates whether key inputs for typing out a message or for movement
-        self.typing = False
+        self.typing = 'C'
 
         #this is the main variable for when the player is drawing on the screen
         self.drawing = False
@@ -47,6 +47,7 @@ class Client:
         #these are the object lists shared with the server
         self.host = host
         self.port = port
+        self.portStr = str(self.port)
         self.outgoingObjects = []
         self.remoteObjects = []
         self.networkConnected = False
@@ -91,6 +92,12 @@ class Client:
         if len(self.message[self.message.rfind('|')+1:]) >= 10:
             self.message += '|'
 
+        if self.portStr != '':
+            self.port = int(self.portStr)
+
+        else:
+            self.port = 0
+
     def network_loop(self):
 
         #this method sends object lists and receives the latest remote objects
@@ -122,10 +129,10 @@ class Client:
                             receivedData = reader.readline(1_000_001)
 
                             if not receivedData:
-                                raise ConnectionError('Server disconnected')
+                                raise ConnectionError('server closed forcibly')
 
                             if len(receivedData) > 1_000_000 or not receivedData.endswith(b'\n'):
-                                raise ValueError('Invalid server message')
+                                raise ValueError('server not right')
 
                             remoteObjects = json.loads(receivedData)
 
@@ -136,18 +143,18 @@ class Client:
                                 not isinstance(item[1], list) or len(item[1]) != 3
                                 for item in remoteObjects
                             ):
-                                raise ValueError('Invalid server object list')
+                                raise ValueError('object not right')
 
                             #the pygame loop will read this list on its next frame
                             with self.networkLock:
                                 self.remoteObjects = remoteObjects
 
-                            #networking runs at roughly 20 updates per second
-                            self.networkStop.wait(0.05)
+                            #networking runs at roughly 60 updates per second
+                            self.networkStop.wait(0.016)
 
             except (OSError, ValueError, TypeError, UnicodeError) as error:
                 if not connectionErrorReported and not self.networkStop.is_set():
-                    print(f'Network unavailable: {error}')
+                    print(f'{error} network not there')
                     connectionErrorReported = True
 
             finally:
@@ -219,7 +226,7 @@ class Client:
                     self.objectBeingDrawn = None
                     self.drawing = False
 
-            if event.type == pygame.KEYDOWN and self.typing:
+            if event.type == pygame.KEYDOWN and self.typing == 'C':
 
                 #performing checks for key edge cases and also checking for length of string so I can add a \n
                 if event.key == pygame.K_BACKSPACE:
@@ -234,3 +241,19 @@ class Client:
 
                 else:
                     self.message += event.unicode
+
+            if event.type == pygame.KEYDOWN and self.typing == 'P':
+                if event.key == pygame.K_BACKSPACE:
+                    self.portStr = self.portStr[:-1]
+                else:
+                    try:
+                        int(event.unicode)
+                        self.portStr += event.unicode
+                    except ValueError:
+                        pass
+
+            if event.type == pygame.KEYDOWN and self.typing == 'IP':
+                if event.key == pygame.K_BACKSPACE:
+                    self.host = self.host[:-1]
+                else:
+                    self.host += event.unicode

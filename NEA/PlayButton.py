@@ -16,3 +16,5 @@ class PlayButton(MenuButtonBase):
 
         #activating the main game
         client.mode = 'Game'
+
+        client.typing = 'G'

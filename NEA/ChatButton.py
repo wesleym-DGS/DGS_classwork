@@ -17,11 +17,11 @@ class ChatButton(InGameButtonBase):
         #this method will be called to activate the chat talking mode
         print('pressed')
 
-        if not client.typing:
+        if client.typing != 'C':
 
             #changing the client to typing mode so the player doesn't move
-            client.typing = True
+            client.typing = 'C'
         else:
 
             #changing the typing back to False on second press so the player can leave the typing mode
-            client.typing = False
+            client.typing = 'G'

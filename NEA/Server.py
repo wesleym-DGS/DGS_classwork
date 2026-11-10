@@ -90,7 +90,7 @@ class Server:
         with self.lock:
             self.connected_players[addrStr] = []
 
-        print(f"Player connected: {addrStr}")
+        print(f"{addrStr} joined ")
 
         try:
             with conn:

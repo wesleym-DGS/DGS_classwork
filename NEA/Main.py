@@ -12,14 +12,24 @@ from Render import Render
 from Player import Player
 from PlayButton import PlayButton
 from ChatTextDisplay import ChatTextDisplay
+from PortTextDisplay import PortTextDisplay
+from PortSetectionButton import PortSelectionButton
+from IpTextDisplay import IpTextDisplay
+from IpSelectionButton import IpSelectionButton
 
 #creating all objects so they can be used in the main loop
 client = Client()
 render = Render()
 player = Player(client)
-button = PlayButton(client)
+
+play_button = PlayButton(client)
 chat_button = ChatButton(client)
+port_button = PortSelectionButton(client)
+ip_button = IpSelectionButton(client)
+
 text_chat = ChatTextDisplay(client)
+port_display = PortTextDisplay(client)
+ip_display = IpTextDisplay(client)
 
 #this is the main game loop where all the main game running operations are done
 while client.running:

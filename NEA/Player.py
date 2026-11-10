@@ -64,7 +64,7 @@ class Player(Base):
     def update(self, renderList, dt, typing, mousePos):
 
         #when the game updates this object the player needs move
-        if False == typing:
+        if typing == 'G':
             self.move(50, dt)
 
         #applying the motion that was gathered in the move method
