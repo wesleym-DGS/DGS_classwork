@@ -22,11 +22,13 @@ client = Client()
 render = Render()
 player = Player(client)
 
+#creating the buttons so players can open the game and interact
 play_button = PlayButton(client)
 chat_button = ChatButton(client)
 port_button = PortSelectionButton(client)
 ip_button = IpSelectionButton(client)
 
+#setting up the text displays so players can see text
 text_chat = ChatTextDisplay(client)
 port_display = PortTextDisplay(client)
 ip_display = IpTextDisplay(client)
@@ -41,7 +43,7 @@ while client.running:
     client.update_all(render)
 
     #checking events to make sure windows close and buttons gets pressed
-    client.check_events()
+    client.check_events(player.type)
 
     #rendering all objects to the screen
     render.render()

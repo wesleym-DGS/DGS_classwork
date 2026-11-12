@@ -8,10 +8,12 @@ as that is handled by each class via their own internal methods
 import json
 import socket
 import threading
-
 import pygame
+
 from DrawElipse import DrawElipse
+from DrawRect import DrawRect
 from DrawnObjectBase import DrawnObjectBase
+
 
 class Client:
     def __init__(self, host='127.0.0.1', port=8080):
@@ -19,7 +21,7 @@ class Client:
         #this is going to decide weather or not the game is in the room mode or in main menu mode
         self.mode = 'Menu'
 
-        #the main list is going to store all objects in the game that can be modified by the client, e.g the player and all created objects
+        #the main list is going to store all objects in the game that can be modified by the client
         self.mainList = []
 
         self.sendToServer = []
@@ -35,8 +37,8 @@ class Client:
         #adding a time clock so the time delta can be updated correctly
         self.clock = pygame.time.Clock()
 
-        #this dictates whether key inputs for typing out a message or for movement
-        self.typing = 'C'
+        #this dictates whether key inputs are for typing or movement
+        self.typing = 'G'
 
         #this is the main variable for when the player is drawing on the screen
         self.drawing = False
@@ -55,24 +57,26 @@ class Client:
         #keeping network operations away from the pygame main loop
         self.networkLock = threading.Lock()
         self.networkStop = threading.Event()
-        self.networkThread = threading.Thread(target=self.network_loop, daemon=True)
+
+        self.networkThread = threading.Thread(target=self.network_loop,daemon=True)
         self.networkThread.start()
 
     def update_all(self, render):
 
         #updating the time delta so the players movement doesn't change with frame rate
-        self.dt = self.clock.tick(60)/1000
+        self.dt = self.clock.tick(60) / 1000
 
-        #going though all items in the main list and telling them to update themselves so they can be sent to the server or sent directly to the render list
+        #going though all items in the main list and telling them to update themselves
         for item in self.mainList:
-            if self.mode == 'Menu' and (item.type == 'B' or item.type == 'TDM'):
-                item.update(render.renderList, self.dt, self.typing, pygame.mouse.get_pos())
 
-            elif self.mode == 'Game' and (item.type == 'E' or item.type == 'R'):
-                item.update(self.sendToServer, self.dt, self.typing, pygame.mouse.get_pos())
+            if self.mode == 'Menu' and item.type in ('B', 'TDM'):
+                item.update(render.renderList,self.dt,self.typing,pygame.mouse.get_pos())
 
-            elif self.mode == 'Game' and (item.type == 'DRAW' or item.type == 'CB' or item.type == 'TD'):
-                item.update(render.renderList, self.dt, self.typing, pygame.mouse.get_pos())
+            elif self.mode == 'Game' and item.type in ('E', 'R'):
+                item.update(self.sendToServer,self.dt,self.typing,pygame.mouse.get_pos())
+
+            elif self.mode == 'Game' and item.type in ('DRAW', 'CB', 'TD'):
+                item.update(render.renderList,self.dt,self.typing,pygame.mouse.get_pos())
 
         #rendering the local player and confirmed objects as well as remote ones
         if self.mode == 'Game':
@@ -84,38 +88,51 @@ class Client:
                 remoteObjects = self.remoteObjects
 
             render.renderList.extend(remoteObjects)
+
         else:
             #the server should not show this player while they are in the menu
             with self.networkLock:
                 self.outgoingObjects = []
 
-        if len(self.message[self.message.rfind('|')+1:]) >= 10:
+        if len(self.message[self.message.rfind('|') + 1:]) >= 10:
             self.message += '|'
 
-        if self.portStr != '':
-            self.port = int(self.portStr)
+        #only using valid port numbers for network connections
+        if self.portStr.isascii() and self.portStr.isdecimal() and len(self.portStr) <= 5:
+            newPort = int(self.portStr)
 
-        else:
-            self.port = 0
+            if 1 <= newPort <= 65535:
+                self.port = newPort
 
     def network_loop(self):
 
         #this method sends object lists and receives the latest remote objects
         connectionErrorReported = False
 
+        #keeping the thread alive even when the player is still in the menu
         while not self.networkStop.is_set():
+
+            #only connecting once the player has pressed PLAY
+            if self.mode != 'Game':
+                self.networkStop.wait(0.1)
+                continue
+
             try:
                 #trying to connect without freezing the pygame window
-                with socket.create_connection((self.host, self.port), timeout=2) as conn:
+                with socket.create_connection((self.host, self.port),timeout=2) as conn:
+
                     conn.settimeout(5)
 
                     #using a persistent reader to receive one complete JSON line
                     with conn.makefile('rb') as reader:
+
                         self.networkConnected = True
                         connectionErrorReported = False
-                        print('Connected to server')
 
-                        while not self.networkStop.is_set():
+                        print('connected to server')
+
+                        #the connection stays open while the player remains in game
+                        while not self.networkStop.is_set() and self.mode == 'Game':
 
                             #getting the latest local objects from the main thread
                             with self.networkLock:
@@ -129,10 +146,10 @@ class Client:
                             receivedData = reader.readline(1_000_001)
 
                             if not receivedData:
-                                raise ConnectionError('server closed forcibly')
+                                raise ConnectionError('server closed connection')
 
                             if len(receivedData) > 1_000_000 or not receivedData.endswith(b'\n'):
-                                raise ValueError('server not right')
+                                raise ValueError('invalid server message')
 
                             remoteObjects = json.loads(receivedData)
 
@@ -143,29 +160,32 @@ class Client:
                                 not isinstance(item[1], list) or len(item[1]) != 3
                                 for item in remoteObjects
                             ):
-                                raise ValueError('object not right')
+                                raise ValueError('invalid server object list')
 
                             #the pygame loop will read this list on its next frame
                             with self.networkLock:
                                 self.remoteObjects = remoteObjects
 
-                            #networking runs at roughly 60 updates per second
-                            self.networkStop.wait(0.016)
+                            #aiming for up to roughly 60 updates per second
+                            self.networkStop.wait(1 / 60)
 
             except (OSError, ValueError, TypeError, UnicodeError) as error:
+
                 if not connectionErrorReported and not self.networkStop.is_set():
-                    print(f'{error} network not there')
+                    print(f'network unavailable: {error}')
                     connectionErrorReported = True
 
             finally:
+
                 self.networkConnected = False
 
-                #clearing remote players when the server is unavailable
+                #clearing remote players when the connection is closed
                 with self.networkLock:
                     self.remoteObjects = []
 
             #reconnecting after the server comes back online
-            self.networkStop.wait(1)
+            if self.mode == 'Game':
+                self.networkStop.wait(1)
 
     def flush_lists(self, lists):
 
@@ -173,9 +193,9 @@ class Client:
         for item in lists:
             item.clear()
 
-    def check_events(self):
+    def check_events(self, playerType):
 
-        #doing the normal checks for a pygame instance to make sure it can be closed, and so I can check for things like pressing buttons
+        #doing the normal checks for a pygame instance to make sure it can be closed
         for event in pygame.event.get():
 
             #searching though every event that has happened
@@ -186,74 +206,93 @@ class Client:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
 
-                    # checking whether the player has clicked a button
+                    #checking whether the player has clicked a button
                     buttonPressed = False
 
                     for item in self.mainList:
+
                         if item.type in ('B', 'CB') and item.rect.collidepoint(event.pos):
 
-                            # only allowing buttons in the current mode to be pressed
-                            if (self.mode == 'Menu' and item.type == 'B') or (self.mode == 'Game' and item.type == 'CB'):
+                            #only allowing buttons in the current mode to be pressed
+                            if ((self.mode == 'Menu' and item.type == 'B') or (self.mode == 'Game' and item.type == 'CB')):
                                 item.pressed(self)
                                 buttonPressed = True
                                 break
 
-                    # only drawing objects when the player is in game mode
+                    #only drawing objects when the player is in game mode
                     if not buttonPressed and self.mode == 'Game':
 
                         if not self.drawing:
-                            self.objectBeingDrawn = DrawElipse(event.pos, event.pos, self)
+
+                            if playerType == 'E':
+                                self.objectBeingDrawn = DrawElipse(event.pos,event.pos,self)
+
+                            elif playerType == 'R':
+                                self.objectBeingDrawn = DrawRect(event.pos,event.pos,self)
+
                             self.drawing = True
 
                         else:
+
                             newObject = DrawnObjectBase(self,self.objectBeingDrawn.pos,self.objectBeingDrawn.typeS,self.objectBeingDrawn.colour,self.objectBeingDrawn.rect.copy())
 
-                            # removing the temporary drawing object
+                            #removing the temporary drawing object
                             self.mainList.remove(self.objectBeingDrawn)
+
                             self.objectBeingDrawn = None
                             self.drawing = False
 
             if event.type == pygame.KEYDOWN and self.drawing:
 
-                # checking if the player wants to cancel the current drawing
+                #checking if the player wants to cancel the current drawing
                 if event.key == pygame.K_ESCAPE:
 
-                    # removing the temporary object from the main list
+                    #removing the temporary object from the main list
                     if self.objectBeingDrawn is not None:
                         self.mainList.remove(self.objectBeingDrawn)
 
-                    # clearing the object reference and drawing state
+                    #clearing the object reference and drawing state
                     self.objectBeingDrawn = None
                     self.drawing = False
 
             if event.type == pygame.KEYDOWN and self.typing == 'C':
 
-                #performing checks for key edge cases and also checking for length of string so I can add a \n
+                #checking the chat input
                 if event.key == pygame.K_BACKSPACE:
-                    if self.message[len(self.message)-1:] == '|':
+
+                    if self.message[len(self.message) - 1:] == '|':
                         self.message = self.message[:-2]
                     else:
                         self.message = self.message[:-1]
 
                 elif event.key == pygame.K_RETURN:
                     self.message = ''
-                    self.typing = False
+                    self.typing = 'G'
 
                 else:
                     self.message += event.unicode
 
             if event.type == pygame.KEYDOWN and self.typing == 'P':
+
+                #allowing the player to change the server port
                 if event.key == pygame.K_BACKSPACE:
                     self.portStr = self.portStr[:-1]
-                else:
-                    try:
-                        int(event.unicode)
-                        self.portStr += event.unicode
-                    except ValueError:
-                        pass
+
+                elif event.key == pygame.K_RETURN:
+                    self.typing = 'G'
+
+                elif (event.unicode in '0123456789' and event.unicode and len(self.portStr) < 5):
+                    self.portStr += event.unicode
 
             if event.type == pygame.KEYDOWN and self.typing == 'IP':
+
+                #allowing the player to change the server IP address
                 if event.key == pygame.K_BACKSPACE:
                     self.host = self.host[:-1]
-                else:
-                    self.host += event.unicode
+
+                elif event.key == pygame.K_RETURN:
+                    self.typing = 'G'
+
+                elif event.unicode.isprintable() and not event.unicode.isspace():
+                    if len(self.host) < 253:
+                        self.host += event.unicode

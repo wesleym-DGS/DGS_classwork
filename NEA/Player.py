@@ -3,6 +3,7 @@ this is going to be the main class for the player object. It is going to need to
 '''
 
 import pygame
+import random
 
 #importing the main basic class for all objects that need to be rendered including the player
 from Base import Base
@@ -11,7 +12,7 @@ class Player(Base):
     def __init__(self, client):
 
         #passing the players type as an ellipsis
-        super().__init__((150,150), 'E', client)
+        super().__init__((150,150), random.choice(['E', 'R']), client)
 
         #then creating this objects rect so it can be drawn
         self.rect = pygame.Rect(self.pos.x - 7.5, self.pos.y - 7.5, 15, 15)
