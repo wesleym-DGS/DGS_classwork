@@ -26,20 +26,20 @@ class Render:
         #this is the main screen for each client
         self.screen = pygame.display.set_mode((800, 600))
 
-    def render_chat(self, font, messages, pos):
+    def render_chat(self, font, messages, rect):
 
-        #fitting the chat box into the space below its starting position
-        padding = 6
-        width = self.screen.get_width() - 2 * int(pos.x)
+        #fitting the chat text inside its own box
+        padding = 3
+        textWidth = rect.width - padding * 2
         lineHeight = font.get_linesize()
-        maxLines = (self.screen.get_height() - int(pos.y) - padding * 2) // lineHeight
+        maxLines = (rect.height - padding * 2) // lineHeight
         lines = []
 
         #wrapping the messages without changing the text being sent
         for message in messages:
             line = ''
             for character in message:
-                if font.size(line + character)[0] > width - padding * 2:
+                if font.size(line + character)[0] > textWidth:
                     lines.append(line)
                     line = ''
                 line += character
@@ -49,7 +49,7 @@ class Render:
                 break
 
         lines = lines[:maxLines]
-        box = pygame.Rect(pos.x, pos.y, width, len(lines) * lineHeight + padding * 2)
+        box = pygame.Rect(rect.x, rect.y, rect.width, len(lines) * lineHeight + padding * 2)
         pygame.draw.rect(self.screen, (30, 30, 30), box)
 
         for i, line in enumerate(lines):

@@ -10,7 +10,7 @@ class ChatTextDisplay(InGameTextBase):
     def __init__(self, client):
 
         #passing up the needed vars and also saving the client for later use
-        super().__init__(client,(100, 400))
+        super().__init__(client,(8, 54), 320, 42)
         self.client = client
 
     def update(self, renderList, dt, typing, mousePos):
@@ -21,4 +21,4 @@ class ChatTextDisplay(InGameTextBase):
 
         if chatMessages:
             lines = [f'{address}: {message}' for address, message in chatMessages]
-            renderList.append([self.type, self.font, lines, self.pos])
+            renderList.append([self.type, self.font, lines, self.rect])

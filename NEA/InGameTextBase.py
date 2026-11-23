@@ -8,9 +8,10 @@ import pygame
 from Base import Base
 
 class InGameTextBase(Base):
-    def __init__(self, client, pos):
+    def __init__(self, client, pos, width, height):
 
         #passing up the main information and creating the extra needed variables
         super().__init__(pos, 'TD', client)
-        self.font = pygame.font.SysFont('Arial', 11)
+        self.rect = pygame.Rect(pos, (width, height))
+        self.font = pygame.font.SysFont('Arial', 10)
         self.text = ''
