@@ -1,7 +1,7 @@
 
 '''
 this is going to be the main server class that will handle multiplayer functionality
-the server receives server lists, merges them and sends them back to clients
+the server receives objects and chat messages, merges them and sends them back to clients
 '''
 
 import json
@@ -14,6 +14,8 @@ class Server:
 
         #this is the main dictionary where all players info is stored
         self.connected_players = {}
+
+        self.banned_players = []
 
         #this is the main server information like the address and the port
         self.host = '0.0.0.0'
@@ -30,18 +32,22 @@ class Server:
 
     def send_to_players(self, conn, addrStr):
 
-        #creating a list containing the objects from all other clients
+        #collecting the other players objects and every players current message
         with self.lock:
-            tempPayload = []
+            remoteObjects = []
+            chatMessages = []
 
-            for playerID in self.connected_players:
+            for playerID, (objects, message) in self.connected_players.items():
 
                 #not sending a player their own objects again
                 if playerID != addrStr:
-                    tempPayload.extend(self.connected_players[playerID])
+                    remoteObjects.extend(objects)
 
-        #converting the object list into JSON
-        payload = json.dumps(tempPayload).encode('utf-8') + b'\n'
+                if message:
+                    chatMessages.append([playerID, message])
+
+        #converting the object and chat lists into JSON
+        payload = json.dumps([remoteObjects, chatMessages]).encode('utf-8') + b'\n'
 
         #sending the combined list back to the client
         conn.sendall(payload)
@@ -84,11 +90,15 @@ class Server:
     def handle_connection(self, conn, addr):
 
         #creating an identifier for the connected player
-        addrStr = str(addr)
+        addrStr = f'{addr[0]}:{addr[1]}'
 
         #adding the new player to the main dictionary
+        if addrStr in self.banned_players:
+            conn.close()
+            return
+
         with self.lock:
-            self.connected_players[addrStr] = []
+            self.connected_players[addrStr] = [[], '']
 
         print(f"{addrStr} joined ")
 
@@ -118,14 +128,22 @@ class Server:
                         receivedList = json.loads(receivedData)
 
                         #checking the received data before storing it
-                        if not self.check_data(receivedList):
+                        if not isinstance(receivedList, list) or len(receivedList) != 2:
+                            raise ValueError('invalid player update')
+
+                        objects, message = receivedList
+
+                        if not self.check_data(objects):
                             raise ValueError('the object list was wrongun')
 
-                        #updating the stored objects for this player
-                        with self.lock:
-                            self.connected_players[addrStr] = receivedList
+                        if not isinstance(message, str) or len(message) > 500 or (message and not message.isprintable()):
+                            raise ValueError('invalid chat message')
 
-                        #sending the merged objects back to the player
+                        #updating the stored objects and current message for this player
+                        with self.lock:
+                            self.connected_players[addrStr] = [objects, message]
+
+                        #sending the merged objects and messages back to the player
                         self.send_to_players(conn, addrStr)
 
         except (ConnectionError, OSError, ValueError, UnicodeError) as error:
@@ -133,7 +151,7 @@ class Server:
 
         finally:
 
-            #removing the player's objects when they disconnect
+            #removing the player's objects and message when they disconnect
             with self.lock:
                 self.connected_players.pop(addrStr, None)
 

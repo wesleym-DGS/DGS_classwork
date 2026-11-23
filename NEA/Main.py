@@ -11,6 +11,7 @@ from ChatButton import ChatButton
 from Render import Render
 from Player import Player
 from PlayButton import PlayButton
+from SelfChatTextDisplay import SelfChatTextDisplay
 from ChatTextDisplay import ChatTextDisplay
 from PortTextDisplay import PortTextDisplay
 from PortSetectionButton import PortSelectionButton
@@ -29,6 +30,7 @@ port_button = PortSelectionButton(client)
 ip_button = IpSelectionButton(client)
 
 #setting up the text displays so players can see text
+self_text_chat = SelfChatTextDisplay(client)
 text_chat = ChatTextDisplay(client)
 port_display = PortTextDisplay(client)
 ip_display = IpTextDisplay(client)

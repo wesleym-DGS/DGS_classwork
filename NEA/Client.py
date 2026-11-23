@@ -43,15 +43,16 @@ class Client:
         #this is the main variable for when the player is drawing on the screen
         self.drawing = False
 
-        #this is the message, and it gets cleared when it is sent
+        #this is the current chat message being typed
         self.message = ''
 
-        #these are the object lists shared with the server
+        #this is the game state shared with the server
         self.host = host
         self.port = port
         self.portStr = str(self.port)
-        self.outgoingObjects = []
+        self.outgoingState = [[], '']
         self.remoteObjects = []
+        self.chatMessages = []
         self.networkConnected = False
 
         #keeping network operations away from the pygame main loop
@@ -65,6 +66,7 @@ class Client:
 
         #updating the time delta so the players movement doesn't change with frame rate
         self.dt = self.clock.tick(60) / 1000
+        gameText = []
 
         #going though all items in the main list and telling them to update themselves
         for item in self.mainList:
@@ -75,27 +77,27 @@ class Client:
             elif self.mode == 'Game' and item.type in ('E', 'R'):
                 item.update(self.sendToServer,self.dt,self.typing,pygame.mouse.get_pos())
 
-            elif self.mode == 'Game' and item.type in ('DRAW', 'CB', 'TD'):
+            elif self.mode == 'Game' and item.type in ('DRAW', 'CB'):
                 item.update(render.renderList,self.dt,self.typing,pygame.mouse.get_pos())
 
-        #rendering the local player and confirmed objects as well as remote ones
-        if self.mode == 'Game':
-            render.renderList.extend(self.sendToServer)
+            elif self.mode == 'Game' and item.type == 'TD':
+                item.update(gameText,self.dt,self.typing,pygame.mouse.get_pos())
 
+        if self.mode == 'Game':
             #saving a fresh snapshot before Main clears sendToServer next frame
             with self.networkLock:
-                self.outgoingObjects = [item.copy() for item in self.sendToServer]
+                self.outgoingState = [[item.copy() for item in self.sendToServer], self.message]
                 remoteObjects = self.remoteObjects
 
+            #rendering the chat after the game objects so it stays visible
+            render.renderList.extend(self.sendToServer)
             render.renderList.extend(remoteObjects)
+            render.renderList.extend(gameText)
 
         else:
             #the server should not show this player while they are in the menu
             with self.networkLock:
-                self.outgoingObjects = []
-
-        if len(self.message[self.message.rfind('|') + 1:]) >= 10:
-            self.message += '|'
+                self.outgoingState = [[], '']
 
         #only using valid port numbers for network connections
         if self.portStr.isascii() and self.portStr.isdecimal() and len(self.portStr) <= 5:
@@ -106,7 +108,7 @@ class Client:
 
     def network_loop(self):
 
-        #this method sends object lists and receives the latest remote objects
+        #this method exchanges game objects and chat messages with the server
         connectionErrorReported = False
 
         #keeping the thread alive even when the player is still in the menu
@@ -134,15 +136,15 @@ class Client:
                         #the connection stays open while the player remains in game
                         while not self.networkStop.is_set() and self.mode == 'Game':
 
-                            #getting the latest local objects from the main thread
+                            #getting the latest local objects and message from the main thread
                             with self.networkLock:
-                                objects = self.outgoingObjects
+                                outgoingState = self.outgoingState
 
                             #sending one newline-terminated JSON list
-                            payload = json.dumps(objects).encode('utf-8') + b'\n'
+                            payload = json.dumps(outgoingState).encode('utf-8') + b'\n'
                             conn.sendall(payload)
 
-                            #the server replies with the other players objects
+                            #the server replies with remote objects and current messages
                             receivedData = reader.readline(1_000_001)
 
                             if not receivedData:
@@ -151,7 +153,12 @@ class Client:
                             if len(receivedData) > 1_000_000 or not receivedData.endswith(b'\n'):
                                 raise ValueError('invalid server message')
 
-                            remoteObjects = json.loads(receivedData)
+                            receivedList = json.loads(receivedData)
+
+                            if not isinstance(receivedList, list) or len(receivedList) != 2:
+                                raise ValueError('invalid server update')
+
+                            remoteObjects, chatMessages = receivedList
 
                             #checking the basic format before sending it to the renderer
                             if not isinstance(remoteObjects, list) or any(
@@ -162,9 +169,17 @@ class Client:
                             ):
                                 raise ValueError('invalid server object list')
 
-                            #the pygame loop will read this list on its next frame
+                            if not isinstance(chatMessages, list) or any(
+                                not isinstance(item, list) or len(item) != 2 or
+                                not all(isinstance(part, str) and part.isprintable() for part in item)
+                                for item in chatMessages
+                            ):
+                                raise ValueError('invalid server chat list')
+
+                            #the pygame loop will read these lists on its next frame
                             with self.networkLock:
                                 self.remoteObjects = remoteObjects
+                                self.chatMessages = chatMessages
 
                             #aiming for up to roughly 60 updates per second
                             self.networkStop.wait(1 / 60)
@@ -179,9 +194,10 @@ class Client:
 
                 self.networkConnected = False
 
-                #clearing remote players when the connection is closed
+                #clearing remote players and chat when the connection is closed
                 with self.networkLock:
                     self.remoteObjects = []
+                    self.chatMessages = []
 
             #reconnecting after the server comes back online
             if self.mode == 'Game':
@@ -259,18 +275,14 @@ class Client:
 
                 #checking the chat input
                 if event.key == pygame.K_BACKSPACE:
-
-                    if self.message[len(self.message) - 1:] == '|':
-                        self.message = self.message[:-2]
-                    else:
-                        self.message = self.message[:-1]
+                    self.message = self.message[:-1]
 
                 elif event.key == pygame.K_RETURN:
                     self.message = ''
                     self.typing = 'G'
 
-                else:
-                    self.message += event.unicode
+                elif event.unicode.isprintable():
+                    self.message = (self.message + event.unicode)[:500]
 
             if event.type == pygame.KEYDOWN and self.typing == 'P':
 

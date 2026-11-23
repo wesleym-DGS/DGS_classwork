@@ -26,6 +26,36 @@ class Render:
         #this is the main screen for each client
         self.screen = pygame.display.set_mode((800, 600))
 
+    def render_chat(self, font, messages, pos):
+
+        #fitting the chat box into the space below its starting position
+        padding = 6
+        width = self.screen.get_width() - 2 * int(pos.x)
+        lineHeight = font.get_linesize()
+        maxLines = (self.screen.get_height() - int(pos.y) - padding * 2) // lineHeight
+        lines = []
+
+        #wrapping the messages without changing the text being sent
+        for message in messages:
+            line = ''
+            for character in message:
+                if font.size(line + character)[0] > width - padding * 2:
+                    lines.append(line)
+                    line = ''
+                line += character
+
+            lines.append(line)
+            if len(lines) >= maxLines:
+                break
+
+        lines = lines[:maxLines]
+        box = pygame.Rect(pos.x, pos.y, width, len(lines) * lineHeight + padding * 2)
+        pygame.draw.rect(self.screen, (30, 30, 30), box)
+
+        for i, line in enumerate(lines):
+            text_surface = font.render(line, True, (255, 255, 255))
+            self.screen.blit(text_surface, (box.x + padding, box.y + padding + i * lineHeight))
+
     def render(self):
 
         #setting the screen to be blank so that things can be rendered onto it
@@ -56,8 +86,11 @@ class Render:
                 text_rect = text_surface.get_rect(center=item[2].center)
                 self.screen.blit(text_surface, text_rect)
 
-            elif item[0] == 'TD' or item[0] == 'TDM':
-                #working though each line and splitting it at the \n so it can be displayed as many lines
+            elif item[0] == 'TD':
+                self.render_chat(item[1], item[2], item[3])
+
+            elif item[0] == 'TDM':
+                #working though each line of menu text
                 for i, line in enumerate(item[2].split('|')):
                     if line:
                         #drawing the text

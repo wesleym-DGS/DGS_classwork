@@ -1,6 +1,6 @@
 '''
 
-this is the main chat text display class which will display the full text chat
+this is the chat text display class for the messages received from the server
 
 '''
 
@@ -15,8 +15,10 @@ class ChatTextDisplay(InGameTextBase):
 
     def update(self, renderList, dt, typing, mousePos):
 
-        #updating the text in the text box and then adding self to the render list
-        self.text = self.client.message
+        #getting the latest messages from the network thread
+        with self.client.networkLock:
+            chatMessages = self.client.chatMessages
 
-        if self.text != '':
-            renderList.append([self.type, self.font, self.text, self.pos])
+        if chatMessages:
+            lines = [f'{address}: {message}' for address, message in chatMessages]
+            renderList.append([self.type, self.font, lines, self.pos])
