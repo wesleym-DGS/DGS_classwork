@@ -1,1 +1,1 @@
-The main repo for dgs classwork around year 12 and 13 
+This is the main GitHub Repo for some projects for DGS year 12 and maybe 13.
