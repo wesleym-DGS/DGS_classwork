@@ -30,24 +30,21 @@ class Server:
 
         print(f"Server started on {self.host}:{self.port}")
 
-    def send_to_players(self, conn, addrStr):
+    def send_to_players(self, conn):
 
-        #collecting the other players objects and every players current message
+        #collecting every player's objects in join order, including the player receiving them
         with self.lock:
-            remoteObjects = []
+            worldObjects = []
             chatMessages = []
 
             for playerID, (objects, message) in self.connected_players.items():
-
-                #not sending a player their own objects again
-                if playerID != addrStr:
-                    remoteObjects.extend(objects)
+                worldObjects.extend(objects)
 
                 if message:
                     chatMessages.append([playerID, message])
 
         #converting the object and chat lists into JSON
-        payload = json.dumps([remoteObjects, chatMessages]).encode('utf-8') + b'\n'
+        payload = json.dumps([worldObjects, chatMessages]).encode('utf-8') + b'\n'
 
         #sending the combined list back to the client
         conn.sendall(payload)
@@ -144,7 +141,7 @@ class Server:
                             self.connected_players[addrStr] = [objects, message]
 
                         #sending the merged objects and messages back to the player
-                        self.send_to_players(conn, addrStr)
+                        self.send_to_players(conn)
 
         except (ConnectionError, OSError, ValueError, UnicodeError) as error:
             print(f" player {addrStr}, {error}")
@@ -172,7 +169,7 @@ class Server:
                 clientThread.start()
 
         except KeyboardInterrupt:
-            print("Server shutting down")
+            print("server closing down")
 
         finally:
             self.server.close()
