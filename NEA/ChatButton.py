@@ -15,6 +15,8 @@ class ChatButton(InGameButtonBase):
     def pressed(self, client):
 
         #this method will be called to activate the chat talking mode
+
+        #i will be honest i forgot to remove this testing line and its been here for so long i dont want to anymore
         print('pressed')
 
         if client.typing != 'C':
