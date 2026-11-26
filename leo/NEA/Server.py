@@ -14,7 +14,6 @@ class Server:
 
         #this is the main dictionary where all players info is stored
         self.connected_players = {}
-
         self.banned_players = []
 
         #this is the main server information like the address and the port
