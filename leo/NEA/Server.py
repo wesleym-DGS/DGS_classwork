@@ -64,7 +64,7 @@ class Server:
             if item[0] not in ('E', 'R'):
                 return False
 
-            #checking that the colour contains three valid values
+            #checking that the color contains three valid values
             colour = item[1]
 
             if not isinstance(colour, list) or len(colour) != 3:
