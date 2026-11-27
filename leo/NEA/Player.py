@@ -55,7 +55,7 @@ class Player(Base):
 
     def check_bounds(self, bounce):
 
-        #the player position is its centre, so leave room for the full shape
+        #the player position is its center, so leave room for the full shape
         screenWidth, screenHeight = pygame.display.get_surface().get_size()
         left = self.rect.width / 2
         top = self.rect.height / 2

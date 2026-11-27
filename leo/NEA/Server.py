@@ -27,7 +27,7 @@ class Server:
         self.server.bind((self.host, self.port))
         self.server.listen()
 
-        print(f"Server started on {self.host}:{self.port}")
+        print(f"server started on {self.host}:{self.port}")
 
     def send_to_players(self, conn):
 
