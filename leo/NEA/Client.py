@@ -49,7 +49,7 @@ class Client:
         #this is the game state shared with the server
         self.host = host
         self.port = port
-        self.portStr = str(self.port)
+        self.portStr = str(self.port) if self.port else ''
         self.outgoingState = [[], '']
         self.worldObjects = None
         self.chatMessages = []
@@ -86,11 +86,8 @@ class Client:
 
     def update_port(self):
 
-        newPort = int(self.portStr)
-
-        if 1 <= newPort <= 65535:
-            self.port = newPort
-
+        newPort = int(self.portStr or '0')
+        self.port = newPort if 1 <= newPort <= 65535 else 0
 
     def update_all(self, render):
 
@@ -114,10 +111,6 @@ class Client:
             #the server should not show this player while they are in the menu
             with self.networkLock:
                 self.outgoingState = [[], '']
-
-        #only using valid port numbers for network connections
-        if self.portStr.isascii() and self.portStr.isdecimal() and len(self.portStr) <= 5:
-            self.update_port()
 
     def send_network_update(self, conn):
 
@@ -176,8 +169,8 @@ class Client:
         #keeping the thread alive even when the player is still in the menu
         while not self.networkStop.is_set():
 
-            #only connecting once the player has pressed PLAY
-            if self.mode != 'Game':
+            #only connecting in game when a valid port has been entered
+            if self.mode != 'Game' or self.port == 0:
                 self.networkStop.wait(0.1)
                 continue
 
@@ -287,17 +280,30 @@ class Client:
                 self.message = (self.message + event.unicode)[:500]
 
     def typing_check_port(self, event):
-        if self.typing == 'P':
+        if self.typing != 'P':
+            return
 
-            # allowing the player to change the server port
-            if event.key == pygame.K_BACKSPACE:
-                self.portStr = self.portStr[:-1]
+        # allowing the player to change the server port
+        if event.key == pygame.K_BACKSPACE:
+            self.portStr = self.portStr[:-1]
 
-            elif event.key == pygame.K_RETURN:
-                self.typing = 'G'
+        elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
+            self.typing = 'G'
+            return
 
-            elif (event.unicode in '0123456789' and event.unicode and len(self.portStr) < 5):
-                self.portStr += event.unicode
+        elif len(self.portStr) < 5:
+            digit = event.unicode
+            keypadKeys = (
+                pygame.K_KP0, pygame.K_KP1, pygame.K_KP2, pygame.K_KP3, pygame.K_KP4,
+                pygame.K_KP5, pygame.K_KP6, pygame.K_KP7, pygame.K_KP8, pygame.K_KP9
+            )
+            if event.key in keypadKeys:
+                digit = str(keypadKeys.index(event.key))
+
+            if len(digit) == 1 and digit in '0123456789':
+                self.portStr += digit
+
+        self.update_port()
 
     def typing_check_ip(self, event):
         if self.typing == 'IP':

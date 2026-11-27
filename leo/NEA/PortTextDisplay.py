@@ -1,6 +1,6 @@
 '''
 
-this is the main chat text display class which will display the full text chat
+this is the menu text display for the server port
 
 '''
 
@@ -16,7 +16,7 @@ class PortTextDisplay(MenuTextBase):
     def update(self, renderList, dt, typing, mousePos):
 
         #updating the text in the text box and then adding self to the render list
-        self.text = str(self.client.port)
+        self.text = self.client.portStr
 
         if self.text != '':
             renderList.append([self.type, self.font, self.text, self.pos])
