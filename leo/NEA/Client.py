@@ -160,7 +160,7 @@ class Client:
             self.receive_network_update(reader)
 
             #aiming for up to roughly 60 updates per second
-            self.networkStop.wait(1 / 60)
+            self.networkStop.wait(1 / 120)
 
     def network_loop(self):
 
