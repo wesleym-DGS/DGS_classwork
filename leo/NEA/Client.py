@@ -293,10 +293,8 @@ class Client:
 
         elif len(self.portStr) < 5:
             digit = event.unicode
-            keypadKeys = (
-                pygame.K_KP0, pygame.K_KP1, pygame.K_KP2, pygame.K_KP3, pygame.K_KP4,
-                pygame.K_KP5, pygame.K_KP6, pygame.K_KP7, pygame.K_KP8, pygame.K_KP9
-            )
+            keypadKeys = (pygame.K_KP0, pygame.K_KP1, pygame.K_KP2, pygame.K_KP3, pygame.K_KP4, pygame.K_KP5, pygame.K_KP6, pygame.K_KP7, pygame.K_KP8, pygame.K_KP9)
+
             if event.key in keypadKeys:
                 digit = str(keypadKeys.index(event.key))
 
