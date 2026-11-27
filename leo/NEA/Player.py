@@ -55,12 +55,31 @@ class Player(Base):
 
     def check_bounds(self, bounce):
 
-        #checking to see if the player is outside the bounds of the game and if they are,
-        #inverting there momentum so  they get back into the bounds of the game
-        if self.pos.x < 0 or self.pos.x > 785:
-            self.motion.x = -self.motion.x * bounce
-        if self.pos.y < 0 or self.pos.y > 585:
-            self.motion.y = -self.motion.y * bounce
+        #the player position is its centre, so leave room for the full shape
+        screenWidth, screenHeight = pygame.display.get_surface().get_size()
+        left = self.rect.width / 2
+        top = self.rect.height / 2
+        right = screenWidth - left
+        bottom = screenHeight - top
+
+        #clamping the position and bouncing only when moving into the wall
+        if self.pos.x <= left:
+            self.pos.x = left
+            if self.motion.x < 0:
+                self.motion.x = -self.motion.x * bounce
+        elif self.pos.x >= right:
+            self.pos.x = right
+            if self.motion.x > 0:
+                self.motion.x = -self.motion.x * bounce
+
+        if self.pos.y <= top:
+            self.pos.y = top
+            if self.motion.y < 0:
+                self.motion.y = -self.motion.y * bounce
+        elif self.pos.y >= bottom:
+            self.pos.y = bottom
+            if self.motion.y > 0:
+                self.motion.y = -self.motion.y * bounce
 
     def update(self, renderList, dt, typing, mousePos):
 
@@ -78,7 +97,10 @@ class Player(Base):
         self.check_bounds(1)
 
         #this is when the rect for the player rendering gets updated to the current pos
-        self.rect = pygame.Rect(self.pos.x - 7.5, self.pos.y - 7.5, 15, 15)
+        self.rect.topleft = (
+            int(self.pos.x - self.rect.width / 2),
+            int(self.pos.y - self.rect.height / 2)
+        )
 
         #adding the object to the freshly flushed render list
         renderList.append([self.type, (255,0,0), self.rect.x, self.rect.y, self.rect.width, self.rect.height])
